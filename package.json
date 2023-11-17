@@ -1,0 +1,29 @@
+{
+  "name": "c1-nodejs",
+  "version": "1.0.0",
+  "main": "index.js",
+  "scripts": {
+    "dev": "nodemon --exec ts-node index.ts",
+    "start": "node build/index.js",
+    "build": "tsc",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "@types/lodash": "^4.14.199",
+    "express": "^4.18.2",
+    "lodash": "^4.17.21",
+    "lodash-id": "^0.14.1",
+    "lowdb": "^1.0.0"
+  },
+  "devDependencies": {
+    "@types/express": "^4.17.18",
+    "@types/lowdb": "^1.0.12",
+    "nodemon": "^3.0.1",
+    "ts-node": "^10.9.1",
+    "typescript": "^5.2.2"
+  },
+  "keywords": [],
+  "description": ""
+}
