@@ -1,53 +1,57 @@
 import express, { Request, Response } from 'express';
-import low from 'lowdb';
+import low, { LowdbSync } from 'lowdb';
 import FileSync from 'lowdb/adapters/FileSync';
-import jsonServer from 'json-server';
+
+// Interface pour définir la structure d'un utilisateur
+interface User {
+  id: number;
+  email: string;
+  password: string;
+  role: string;
+}
+
+interface Course {
+  id: number;
+  title: string;
+  date: string;
+}
 
 const app = express();
 const port = process.env.PORT || 3000;
 
-const server = jsonServer.create();
-const jsonRouter = jsonServer.router('build/db.json');
-const middlewares = jsonServer.defaults();
-
-app.use(middlewares);
 app.use(express.json());
 
-// Routes pour les opérations POST sur les utilisateurs
+interface Database {
+  users: User[];
+  courses: Course[];
+}
+
+const adapter = new FileSync<Database>('build/db.json');
+const db: LowdbSync<Database> = low(adapter);
+
 app.post('/api/users', (req: Request, res: Response) => {
-  const newUser = req.body;
+  const newUser = req.body as User;
 
-  // Charger les utilisateurs depuis le fichier db.json
-  const users = require('./build/db.json').users;
+  const users = db.get('users').value();
 
-  // Ajouter un nouvel utilisateur avec un ID incrémenté
   newUser.id = users.length + 1;
 
-  // Mettre à jour db.json avec le nouvel utilisateur
-  const db = low(new FileSync('build/db.json'));
   db.get('users').push(newUser).write();
 
   res.json(newUser);
 });
 
-// Routes pour les opérations POST sur les cours
 app.post('/api/courses', (req: Request, res: Response) => {
-  const newCourse = req.body;
+  const newCourse = req.body as Course;
 
-  // Charger les cours depuis le fichier db.json
-  const db = low(new FileSync('build/db.json'));
   const courses = db.get('courses').value();
 
-  // Ajouter un nouveau cours avec un ID incrémenté
   newCourse.id = courses.length + 1;
 
-  // Mettre à jour db.json avec le nouveau cours
   db.get('courses').push(newCourse).write();
 
   res.json(newCourse);
-});  
-
-app.use('/api', jsonRouter);
+});
 
 app.listen(port, () => {
   console.log(`Serveur en cours d'exécution sur le port ${port}`);
