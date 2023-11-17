@@ -1,53 +1,53 @@
 import express, { Request, Response } from 'express';
-import low, { LowdbSync } from 'lowdb';
+import low from 'lowdb';
 import FileSync from 'lowdb/adapters/FileSync';
-
-
-const adapter = new FileSync('db.json');
-const db = low(adapter) as LowdbSync<{ personnes: Person[] }>;
+import jsonServer from 'json-server';
 
 const app = express();
 const port = process.env.PORT || 3000;
 
+const server = jsonServer.create();
+const jsonRouter = jsonServer.router('build/db.json');
+const middlewares = jsonServer.defaults();
+
+app.use(middlewares);
 app.use(express.json());
 
+// Routes pour les opérations POST sur les utilisateurs
+app.post('/api/users', (req: Request, res: Response) => {
+  const newUser = req.body;
 
-db.defaults({ personnes: [] }).write();
+  // Charger les utilisateurs depuis le fichier db.json
+  const users = require('./build/db.json').users;
 
-interface Person {
-  id: string;
-  nom: string;
-  prenom: string;
-  age: number;
-}
+  // Ajouter un nouvel utilisateur avec un ID incrémenté
+  newUser.id = users.length + 1;
 
+  // Mettre à jour db.json avec le nouvel utilisateur
+  const db = low(new FileSync('build/db.json'));
+  db.get('users').push(newUser).write();
 
-let lastPersonId = 0;
-
-const Person = {
-  create: ({ nom, prenom, age }: { nom: string; prenom: string; age: number }): Person => {
-    const id = (++lastPersonId).toString();
-    const personne: Person = { id, nom, prenom, age };
-    db.get('personnes').push(personne).write();
-    return personne;
-  },
-  getById: (id: string): Person | undefined => db.get('personnes').find({ id }).value(),
-};
-
-app.post('/ajouter-personne', (req: Request, res: Response) => {
-  const { nom, prenom, age } = req.body;
-  const nouvellePersonne: Person = Person.create({ nom, prenom, age });
-  res.json(nouvellePersonne);
+  res.json(newUser);
 });
 
-app.get('/personne/:id', (req: Request, res: Response) => {
-  const personne: Person | undefined = Person.getById(req.params.id);
-  if (!personne) {
-    res.status(404).json({ message: 'Personne non trouvée' });
-  } else  {
-    res.json(personne);
-  }
-});
+// Routes pour les opérations POST sur les cours
+app.post('/api/courses', (req: Request, res: Response) => {
+  const newCourse = req.body;
+
+  // Charger les cours depuis le fichier db.json
+  const db = low(new FileSync('build/db.json'));
+  const courses = db.get('courses').value();
+
+  // Ajouter un nouveau cours avec un ID incrémenté
+  newCourse.id = courses.length + 1;
+
+  // Mettre à jour db.json avec le nouveau cours
+  db.get('courses').push(newCourse).write();
+
+  res.json(newCourse);
+});  
+
+app.use('/api', jsonRouter);
 
 app.listen(port, () => {
   console.log(`Serveur en cours d'exécution sur le port ${port}`);
