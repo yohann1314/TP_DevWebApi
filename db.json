@@ -1,4 +1,31 @@
 {
-  "users": [],
-  "courses": []
+  "users": [
+    {
+      "id": 1,
+      "name": "User1",
+      "roles": [
+        "user"
+      ],
+      "email": "user1@example.com"
+    },
+    {
+      "id": 2,
+      "name": "Admin1",
+      "roles": [
+        "admin"
+      ],
+      "email": "admin1@example.com",
+      "password": "admin1"
+    }
+  ],
+  "courses": [
+    {
+      "id": 1,
+      "title": "Course 1"
+    },
+    {
+      "id": 2,
+      "title": "Course 2"
+    }
+  ]
 }
